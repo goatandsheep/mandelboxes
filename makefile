@@ -1,9 +1,10 @@
 
-CC       =  g++
-FLAGS    = -O3 -Wall
+CC       =  pgCC
+CXX = pgCC
+FLAGS    = -O3
 CFLAGS   = $(FLAGS)
 CXXFLAGS = $(FLAGS)
-LDFLAGS  = -lm 
+LDFLAGS  = -lm
 
 PROGRAM_NAME=mandelbox
 

@@ -24,22 +24,24 @@
 #include <string.h>
 #include "3d.h"
 
+
+//test
 //---------------------------------------------------------------------------------------------
 //when projection and modelview matricies are static (computed only once, and camera does not mover)
 int UnProject(double winX, double winY, CameraParams camP, double *obj)
 {
   //Transformation vectors
   double in[4], out[4];
-  
+
   //Transformation of normalized coordinates between -1 and 1
   in[0]=(winX-(double)(camP.viewport[0]))/(double)(camP.viewport[2])*2.0-1.0;
   in[1]=(winY-(double)(camP.viewport[1]))/(double)(camP.viewport[3])*2.0-1.0;
   in[2]=2.0-1.0;
   in[3]=1.0;
-  
+
   //Objects coordinates
   MultiplyMatrixByVector(out, camP.matInvProjModel, in);
-  
+
   if(out[3]==0.0)
     return 0;
 
@@ -56,7 +58,7 @@ void LoadIdentity(double *matrix){
   matrix[1] = 0.0;
   matrix[2] = 0.0;
   matrix[3] = 0.0;
-	
+
   matrix[4] = 0.0;
   matrix[5] = 1.0;
   matrix[6] = 0.0;
@@ -66,7 +68,7 @@ void LoadIdentity(double *matrix){
   matrix[9] = 0.0;
   matrix[10] = 1.0;
   matrix[11] = 0.0;
-	
+
   matrix[12] = 0.0;
   matrix[13] = 0.0;
   matrix[14] = 0.0;
@@ -77,7 +79,7 @@ void LoadIdentity(double *matrix){
 void Perspective(double fov, double aspect, double zNear, double zFar, double *projMat)
 {
   double ymax, xmax;
-  
+
   ymax = zNear * tan(fov * M_PI / 360.0);
   //ymin = -ymax;
   //xmin = -ymax * aspectRatio;

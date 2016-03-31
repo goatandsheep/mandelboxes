@@ -36,7 +36,7 @@ int main(int argc, char** argv)
 {
   CameraParams    camera_params;
   RenderParams    renderer_params;
-  
+
   getParameters(argv[1], &camera_params, &renderer_params, &mandelBox_params);
 
   int image_size = renderer_params.width * renderer_params.height;
@@ -45,9 +45,9 @@ int main(int argc, char** argv)
   init3D(&camera_params, &renderer_params);
 
   renderFractal(camera_params, renderer_params, image);
-  
+  printf("%s",renderer_params.file_name);
   saveBMP(renderer_params.file_name, image, renderer_params.width, renderer_params.height);
-  
+
   free(image);
 
   return 0;
