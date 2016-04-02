@@ -11,7 +11,7 @@ This project generates a video that traverses a mandelbox that is featured on Yo
 
 `make mandelbox`
 
-`./mandelbox paramsBox.dat`
+`./mandelbox params3.dat`
 
 ## How this was made
 
