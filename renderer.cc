@@ -43,9 +43,7 @@ extern vec3 getColour(const pixelData &pixData, const RenderParams &render_param
 void renderFractal(const CameraParams &camera_params, const RenderParams &renderer_params,
 		   unsigned char* image)
 {
-  #if defined(_OPENMP)
-    omp_set_num_threads(2);
-  #endif
+
 
   const double eps = pow(10.0, renderer_params.detail);
   double farPoint[3];
@@ -57,17 +55,17 @@ void renderFractal(const CameraParams &camera_params, const RenderParams &render
   const int width  = renderer_params.width;
 
   pixelData pix_data;
-  double time = getTime();
+
   #pragma omp parallel\
   default(shared)\
-  private(time, to, pix_data)\
+  private(to, pix_data)\
   shared(image,camera_params, renderer_params, from, farPoint)
   {
-
+  double time = getTime(); // was before pragma loop
   #if defined(_OPENMP)
     int nthreads = omp_get_num_threads();
     int ID = omp_get_thread_num();
-    printf("Running with %d threads\n",nthreads);
+    if (ID==0) printf("Running with %d threads\n",nthreads);
   #else
     int ID = 0;
   #endif
