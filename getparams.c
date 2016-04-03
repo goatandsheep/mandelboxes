@@ -112,7 +112,7 @@ void getParameters(char *filename, CameraParams *camP, RenderParams *renP, Mande
 	case 10:
 	  sscanf(buf, "%d ", &renP->super_sampling);
 	  break;
-	  
+
 	  //FILENAME
 	case 11:
 	  strcpy(renP->file_name, buf);
@@ -123,3 +123,96 @@ void getParameters(char *filename, CameraParams *camP, RenderParams *renP, Mande
   fclose(fp);
 }
 
+
+
+void fillParams(char *filename, CameraParams *camP, RenderParams *renP, MandelBoxParams *boxP)
+{
+  //initiat mandel box params
+  //   float rMin, rFixed;
+  //   float scale;
+  //   float escape_time;
+  //   int num_iter;
+  // } MandelBoxParams;
+  boxP->scale = 2.00001;
+  boxP->rMin = 0.5;
+  boxP->rFixed = 1.0;
+  boxP->num_iter = 13;
+  boxP->escape_time = 1000.0;
+
+  // initiate renderer
+  //   int fractalType;
+  //   int colourType;
+  //   int super_sampling;
+  //   float brightness;
+  //   int width;
+  //   int height;
+  //   float detail;
+  //   int maxRaySteps;
+  //   float maxDistance;
+  //   char file_name[80];
+  // } RenderParams;
+  renP->fractalType = 0;
+  renP->maxRaySteps = 8000;
+  renP->maxDistance = 1000.0;
+  renP->width = 1920;
+  renP->height = 1080;
+  renP->detail = -3;
+  renP->colourType = 1;
+  renP->brightness = 1.2;
+  renP->super_sampling = 0;
+  snprintf(renP->file_name,80,"test%d.bmp",1);
+
+  //initiate camera
+  // double camPos[3];
+  // double camTarget[3];
+  // double camUp[3];
+  // double fov;
+  // double matModelView[16];
+  // double matProjection[16];
+  // double matInvProjModel[16];
+  // int    viewport[4];
+  // } CameraParams;
+
+  camP->camPos[0] = 20;
+  camP->camPos[1] = 20;
+  camP->camPos[2] = 7;
+
+  camP->camTarget[0] = 0;
+  camP->camTarget[1] = 0;
+  camP->camTarget[2] = -1;
+
+  camP->camUp[0] = 0;
+  camP->camUp[1] = 0;
+  camP->camUp[2] = 1;
+  camP->fov = 1;
+
+
+}
+
+
+
+void print_renderer(RenderParams *renP)
+{
+  // initiate renderer
+  //   int fractalType;
+  //   int colourType;
+  //   int super_sampling;
+  //   float brightness;
+  //   int width;
+  //   int height;
+  //   float detail;
+  //   int maxRaySteps;
+  //   float maxDistance;
+  //   char file_name[80];
+  // } RenderParams;
+  printf("1. fractalType: %d\n",renP->fractalType);
+  printf("2. maxRaySteps: %d\n",renP->maxRaySteps);
+  printf("3. maxDistance: %f\n",renP->maxDistance);
+  printf("4. width: %d\n",renP->width);
+  printf("5. height: %d\n",renP->height);
+  printf("6. detail: %f\n",renP->detail);
+  printf("7. colourType: %d\n",renP->colourType);
+  printf("8. brightness: %f\n",renP->brightness);
+  printf("9. super_sampling: %d\n",renP->super_sampling);
+  printf("10. file_name: %s\n",renP->file_name);
+}
