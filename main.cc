@@ -20,33 +20,71 @@
 */
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
+    // for makedir
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+    // end makedir
 #include "camera.h"
 #include "renderer.h"
 #include "mandelbox.h"
+#include <math.h>
+#ifdef _OPENMP
+#include <omp.h>
+#endif
+#ifdef _OPENACC
+#include <openacc.h>
+#include <curand.h>
+#endif
 
 void getParameters(char *filename, CameraParams *camera_params, RenderParams *renderer_params,
 		   MandelBoxParams *mandelBox_paramsP);
 void init3D       (CameraParams *camera_params, const RenderParams *renderer_params);
 void renderFractal(const CameraParams &camera_params, const RenderParams &renderer_params, unsigned char* image);
 void saveBMP      (const char* filename, const unsigned char* image, int width, int height);
+void fillParams(char *filename, CameraParams *camP, RenderParams *renP, MandelBoxParams *boxP);
+void print_renderer(RenderParams *renP);
+
 
 MandelBoxParams mandelBox_params;
+struct stat st = {0};
+#define PI 3.14159265
 
 int main(int argc, char** argv)
 {
+  #if defined(_OPENMP)
+    omp_set_num_threads(2);
+  #endif
   CameraParams    camera_params;
   RenderParams    renderer_params;
 
-  getParameters(argv[1], &camera_params, &renderer_params, &mandelBox_params);
+
+
+
+
+  // getParameters(argv[1], &camera_params, &renderer_params, &mandelBox_params); //this will use the file
+  fillParams(argv[1], &camera_params, &renderer_params, &mandelBox_params); // this will fill with data from getparams.c
+
 
   int image_size = renderer_params.width * renderer_params.height;
   unsigned char *image = (unsigned char*)malloc(3*image_size*sizeof(unsigned char));
 
-  init3D(&camera_params, &renderer_params);
-
-  renderFractal(camera_params, renderer_params, image);
-  printf("%s",renderer_params.file_name);
-  saveBMP(renderer_params.file_name, image, renderer_params.width, renderer_params.height);
+  if (stat("images", &st) == -1) {
+    mkdir("images", 0700);
+}
+  int i;
+  int imax = 360;
+  for (i=0; i<imax;i++){
+    snprintf(renderer_params.file_name,80,"images/image%010d.bmp",i+1);
+    printf("iteration %d of %d\n",i,imax);
+    camera_params.camPos[0] = 15*cos(PI/180*i);
+    camera_params.camPos[1] = 15*sin(PI/180*i);
+    init3D(&camera_params, &renderer_params);
+    renderFractal(camera_params, renderer_params, image);
+    printf("saving: %s\n",renderer_params.file_name);
+    saveBMP(renderer_params.file_name, image, renderer_params.width, renderer_params.height);
+  }
 
   free(image);
 
