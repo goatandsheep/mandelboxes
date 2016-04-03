@@ -30,7 +30,7 @@ bench:
 
 video:
 	make test
-	ffmpeg -r 20 -i images/image%010d.bmp  -c:v libx264 -preset slow -crf 22 -c:a copy output.mp4
+	ffmpeg -r 20 -i images/image%010d.bmp  -c:v libx264 -preset slow -tune animation -crf 18 -c:a copy images/output.mp4
 	open images/output.mp4
 
 
