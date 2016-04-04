@@ -22,14 +22,8 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <math.h>
-#include <mpi.h>
 
-#include <windows.h>
-#include <wand/magick_wand.h>
-
-void saveJPG(const char* filename, const unsigned char* result, int w, int h)
-{
-	// I can ignore the fact that it is RGB and pretend it is YUV, in which case I don't have to change as much
+void saveBMP(const char* filename, const unsigned char* result, int w, int h){
 
 	FILE *f;
 	unsigned char *img = NULL;
@@ -73,21 +67,6 @@ void saveJPG(const char* filename, const unsigned char* result, int w, int h)
 		fwrite(img,3,w,f);
 	    fwrite(bmppad,1,(4-(w*3)%4)%4,f);
 	}
-
 	fclose(f);
-
-	//convert to bmp to jpg
-
-	MagickWand *mw = NULL;
-	MagickWandGenesis();
-	mw = NewMagickWand();
-	MagickReadImage(mw, filename);
-	MagickWriteImage(mw, (filename + ".jpg"));
-
-	if(mw) mw = DestroyMagickWand(mw);
-
-	MagickWandTerminus();
-
-	makeVideo(*f);	// should we send the file before or after jpeg compression??
 
 }

@@ -20,12 +20,14 @@
 */
 #include "vector3d.h"
 #include "mandelbox.h"
+#include<openacc.h>
 
 extern MandelBoxParams mandelBox_params;
 extern double MandelBoxDE(const vec3 &pos, const MandelBoxParams &mPar, double c1, double c2);
 
 //Distance Estimator Field Selector
-double DE(const vec3 &p)
+#pragma acc routine
+double DE(vec3 &p)
 {
   double c1 = fabs(mandelBox_params.scale - 1.0);
   double c2 = pow( fabs(mandelBox_params.scale), 1 - mandelBox_params.num_iter);

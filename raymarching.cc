@@ -24,10 +24,14 @@
 
 #include "color.h"
 #include "renderer.h"
+#include<openacc.h>
 
-extern double DE(const vec3 &p);
-void normal (const vec3 & p, vec3 & normal);
+#pragma acc routine(DE)
+double DE(const vec3 &p);
 
+inline void normal (const vec3 & p, vec3 & normal);
+
+#pragma acc routine
 void rayMarch(const RenderParams &render_params, const vec3 &from, const vec3  &direction, double eps,
 	      pixelData& pix_data)
 {
@@ -71,9 +75,9 @@ void rayMarch(const RenderParams &render_params, const vec3 &from, const vec3  &
     pix_data.escaped = true;
 }
 
-
-void normal(const vec3 & p, vec3 & normal)
-{
+//#pragma acc routine
+inline void normal(const vec3 & p, vec3 & normal)
+  {
   // compute the normal at p
   const double sqrt_mach_eps = 1.4901e-08;
 

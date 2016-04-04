@@ -24,34 +24,9 @@
 #include <string.h>
 #include "3d.h"
 
-
 //test
 //---------------------------------------------------------------------------------------------
 //when projection and modelview matricies are static (computed only once, and camera does not mover)
-int UnProject(double winX, double winY, CameraParams camP, double *obj)
-{
-  //Transformation vectors
-  double in[4], out[4];
-
-  //Transformation of normalized coordinates between -1 and 1
-  in[0]=(winX-(double)(camP.viewport[0]))/(double)(camP.viewport[2])*2.0-1.0;
-  in[1]=(winY-(double)(camP.viewport[1]))/(double)(camP.viewport[3])*2.0-1.0;
-  in[2]=2.0-1.0;
-  in[3]=1.0;
-
-  //Objects coordinates
-  MultiplyMatrixByVector(out, camP.matInvProjModel, in);
-
-  if(out[3]==0.0)
-    return 0;
-
-  out[3] = 1.0/out[3];
-  obj[0] = out[0]*out[3];
-  obj[1] = out[1]*out[3];
-  obj[2] = out[2]*out[3];
-  return 1;
-}
-
 
 void LoadIdentity(double *matrix){
   matrix[0] = 1.0;
@@ -237,6 +212,7 @@ void MultiplyMatrices(double *result, const double *matrix1, const double *matri
     matrix1[15]*matrix2[15];
 }
 
+#pragma acc routine seq
 void MultiplyMatrixByVector(double *resultvector, double *matrix, double *pvector)
 {
   resultvector[0]=matrix[0]*pvector[0]+matrix[4]*pvector[1]+matrix[8]*pvector[2]+matrix[12]*pvector[3];
@@ -244,6 +220,33 @@ void MultiplyMatrixByVector(double *resultvector, double *matrix, double *pvecto
   resultvector[2]=matrix[2]*pvector[0]+matrix[6]*pvector[1]+matrix[10]*pvector[2]+matrix[14]*pvector[3];
   resultvector[3]=matrix[3]*pvector[0]+matrix[7]*pvector[1]+matrix[11]*pvector[2]+matrix[15]*pvector[3];
 }
+
+#pragma acc routine seq
+int UnProject(double winX, double winY, CameraParams camP, double *obj)
+{
+  //Transformation vectors
+  double in[4], out[4];
+
+  //Transformation of normalized coordinates between -1 and 1
+  in[0]=(winX-(double)(camP.viewport[0]))/(double)(camP.viewport[2])*2.0-1.0;
+  in[1]=(winY-(double)(camP.viewport[1]))/(double)(camP.viewport[3])*2.0-1.0;
+  in[2]=2.0-1.0;
+  in[3]=1.0;
+
+  //Objects coordinates
+  MultiplyMatrixByVector(out, camP.matInvProjModel, in);
+
+  if(out[3]==0.0)
+    return 0;
+
+  out[3] = 1.0/out[3];
+  obj[0] = out[0]*out[3];
+  obj[1] = out[1]*out[3];
+  obj[2] = out[2]*out[3];
+  return 1;
+}
+
+
 
 #define SWAP_ROWS(a, b) { double *_tmp = a; (a)=(b); (b)=_tmp; }
 #define MAT(m,r,c) (m)[(c)*4+(r)]

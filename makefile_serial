@@ -1,10 +1,10 @@
 #FLAGS=-acc -fast -ta=tesla,cc35 -Minfo=accel -Minform=inform -O3
-LDFLAGS = -lm -mp
-FLAGS= -mp
+LDFLAGS = -lm
+FLAGS= -Wall
 CFLAGS  = $(FLAGS)
 CXXFLAGS= $(FLAGS)
-CXX=pgCC
-CC=pgCC
+CXX=g++-4.9
+CC=g++-4.9
 #-O3
 
 PROGRAM_NAME=mandelbox
