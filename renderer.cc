@@ -30,7 +30,6 @@
 #endif
 #ifdef _OPENACC
 #include <openacc.h>
-#include <curand.h>
 #endif
 
 extern double getTime();

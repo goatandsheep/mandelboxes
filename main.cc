@@ -35,7 +35,6 @@
 #endif
 #ifdef _OPENACC
 #include <openacc.h>
-#include <curand.h>
 #endif
 
 void getParameters(char *filename, CameraParams *camera_params, RenderParams *renderer_params,
@@ -74,9 +73,9 @@ int main(int argc, char** argv)
     mkdir("images", 0700);
 }
   int i;
-  int imax = 360;
-  for (i=0; i<imax;i++){
-    snprintf(renderer_params.file_name,80,"images/image%010d.bmp",i+1);
+  int imax = 2;
+  for (i=1; i<=imax;i++){
+    snprintf(renderer_params.file_name,80,"images/image%010d.bmp",i);
     printf("iteration %d of %d\n",i,imax);
     camera_params.camPos[0] = 15*cos(PI/180*i);
     camera_params.camPos[1] = 15*sin(PI/180*i);

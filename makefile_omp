@@ -1,9 +1,9 @@
-LDFLAGS = -lm -fopenmp
-FLAGS= -Wall -fopenmp -O3
+LDFLAGS = -lm -mp
+FLAGS= -mp -acc -fast -ta=tesla,cc35 -Minfo=accel -Minform=inform -O3
 CFLAGS  = $(FLAGS)
 CXXFLAGS= $(FLAGS)
-CXX=g++-4.9
-CC=g++-4.9
+CXX=pgCC
+CC=pgCC
 
 PROGRAM_NAME=mandelbox
 
