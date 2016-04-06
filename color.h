@@ -26,8 +26,9 @@
 typedef struct
 {
   bool escaped;
-  vec3 hit;
-  vec3 normal;
+  vec3 hit; // camera_pos + (direction * distance)
+  vec3 normal; // direction
+  double distance; // distance
 } pixelData;
 
 #endif

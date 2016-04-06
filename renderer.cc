@@ -33,21 +33,22 @@
 #include <curand.h>
 #endif
 
-extern double getTime();
-extern void   printProgress( double perc, double time );
+// extern double getTime();
+// extern void   printProgress( double perc, double time );
 
 extern void rayMarch (const RenderParams &render_params, const vec3 &from, const vec3  &to, double eps, pixelData &pix_data);
+
 extern vec3 getColour(const pixelData &pixData, const RenderParams &render_params,
 		      const vec3 &from, const vec3  &direction);
 
-void renderFractal(const CameraParams &camera_params, const RenderParams &renderer_params,
-		   unsigned char* image)
+void renderFractal(const CameraParams &camera_params, const RenderParams &renderer_params,unsigned char* image)
 {
 
 
   const double eps = pow(10.0, renderer_params.detail);
   double farPoint[3];
-  vec3 to, from;
+  vec3 to, from, collision;
+
 
   from.SetDoublePoint(camera_params.camPos);
 
@@ -58,14 +59,14 @@ void renderFractal(const CameraParams &camera_params, const RenderParams &render
 
   #pragma omp parallel\
   default(shared)\
-  private(to, pix_data)\
+  private(to, pix_data,collision)\
   shared(image,camera_params, renderer_params, from, farPoint)
   {
-  double time = getTime(); // was before pragma loop
+  // double time = getTime(); // was before pragma loop
   #if defined(_OPENMP)
     int nthreads = omp_get_num_threads();
     int ID = omp_get_thread_num();
-    if (ID==0) printf("Running with %d threads\n",nthreads);
+    // if (ID==0) printf("Running with %d threads\n",nthreads);
   #else
     int ID = 0;
   #endif
@@ -89,6 +90,10 @@ void renderFractal(const CameraParams &camera_params, const RenderParams &render
 
   	  //render the pixel
   	  rayMarch(renderer_params, from, to, eps, pix_data);
+      // if (pix_data.escaped == false){
+      //   printf("%dx%d - distance = %f\n",i,j,pix_data.distance);
+      // }
+
 
   	  //get the colour at this pixel
   	  color = getColour(pix_data, renderer_params, from, to);
@@ -99,9 +104,9 @@ void renderFractal(const CameraParams &camera_params, const RenderParams &render
   	  image[k+1] = (unsigned char)(color.y * 255);
   	  image[k]   = (unsigned char)(color.z * 255);
   	}
-    if (ID==0) printProgress((j+1)/(double)height,getTime()-time);
+    //if (ID==0) printProgress((j+1)/(double)height,getTime()-time);
   }
-  if (ID==0) printf("\n rendering done:\n");
+  //if (ID==0) printf("\n rendering done:\n");
 }//end parallel
 
 }

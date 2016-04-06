@@ -15,21 +15,33 @@ $(PROGRAM_NAME): main.o print.o timing.o savebmp.o getparams.o 3d.o getcolor.o d
 omp:
 	make clean
 	make -f makefile_omp
+ompserv:
+	make clean
+	make -f makefile_ompserv
+ompservmpi:
+	make clean
+	make -f makefile_ompservmpi
 serial:
 	make clean
 	make -f makefile_serial
 
+
+
 test:
-	# rm -f image2.bmp
 	./mandelbox params2.dat
-	# open image0000000002.bmp
-	# sleep 1
-	# rm -f image0000000002.bmp
+testmpi:
+	# --map-by socket:PE=1:none use for openACC
+	mpirun --map-by socket:PE=4:none -hostfile host_file ./mandelbox para
+
+
 bench:
 	python -m timeit -n 3 -r 1 "__import__('os').system('./mandelbox params2.dat')"
+benchmpi:
+	python -m timeit -n 3 -r 1 "__import__('os').system('mpirun --map-by socket:PE=4 -hostfile host_file ./mandelbox para')"
+
 
 video:
-	make test
+	# make test
 	ffmpeg -r 20 -i images/image%010d.bmp  -c:v libx264 -preset slow -tune animation -crf 18 -c:a copy images/output.mp4
 	open images/output.mp4
 

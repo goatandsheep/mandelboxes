@@ -21,7 +21,7 @@
 #ifndef _CAMERA_H
 #define _CAMERA_H
 
-typedef struct 
+typedef struct
 {
   double camPos[3];
   double camTarget[3];
@@ -29,7 +29,7 @@ typedef struct
   double fov;
   double matModelView[16];
   double matProjection[16];
-  double matInvProjModel[16]; 
+  double matInvProjModel[16];
   int    viewport[4];
 } CameraParams;
 

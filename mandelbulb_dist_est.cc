@@ -33,17 +33,17 @@ double MandelBulbDistanceEstimator(const vec3 &p0, const MandelBoxParams &params
 {
   vec3 z;
   z = p0;
-  
+
   double dr = 1.0;
   double r = 0.0;
 
   double Bailout = params.rMin;
   double Power = params.rFixed;
 
-  for (int i=0; i < params.num_iter; i++) 
+  for (int i=0; i < params.num_iter; i++)
     {
       MAGNITUDE(r,z);
-      if(r > Bailout) break; 
+      if(r > Bailout) break;
 
       double theta = acos(z.z/r);
       double phi   = atan2(z.y, z.x);

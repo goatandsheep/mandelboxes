@@ -125,7 +125,7 @@ void getParameters(char *filename, CameraParams *camP, RenderParams *renP, Mande
 
 
 
-void fillParams(char *filename, CameraParams *camP, RenderParams *renP, MandelBoxParams *boxP)
+void fillDefaultParams(char *filename, CameraParams *camP, RenderParams *renP, MandelBoxParams *boxP)
 {
   //initiat mandel box params
   //   float rMin, rFixed;
@@ -160,7 +160,7 @@ void fillParams(char *filename, CameraParams *camP, RenderParams *renP, MandelBo
   renP->colourType = 1;
   renP->brightness = 1.2;
   renP->super_sampling = 0;
-  snprintf(renP->file_name,80,"test%d.bmp",1);
+  snprintf(renP->file_name,80,"default_name%d.bmp",1);
 
   //initiate camera
   // double camPos[3];
