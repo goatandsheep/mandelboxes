@@ -24,8 +24,8 @@
 
 void printProgress( double perc, double time )
 {
-  static char delete_space[80];
-  static char * OutputString;
+  char delete_space[80];
+  char * OutputString;
   perc *= 100;
 
   int sec = ceil(time);

@@ -25,29 +25,34 @@
 #include "mandelbox.h"
 #include <math.h>
 
-#define SQR(x) ((x)*(x))
+// #define SQR(x) ((x)*(x))
 
-#define COMPONENT_FOLD(x) { (x) = fabs(x) <= 1? (x) : copysign(2,(x))-(x); }
+// #define COMPONENT_FOLD(x) { (x) = fabs(x) <= 1? (x) : copysign(2,(x))-(x); }
 
-
+// #pragma acc routine seq
 double MandelBoxDE(const vec3 &p0, const MandelBoxParams &params, double c1, double c2)
 {
   vec3 p = p0;
-  double rMin2   = SQR(params.rMin);
-  double rFixed2 = SQR(params.rFixed);
-  double escape  = SQR(params.escape_time);
-  double dfactor = 1; 
+  double rMin2   = params.rMin*params.rMin;
+  double rFixed2 = params.rFixed*params.rFixed;
+  double escape  = params.escape_time*params.escape_time;
+  double dfactor = 1;
   double r2      =-1;
   const double rFixed2rMin2 = rFixed2/rMin2;
 
   int i = 0;
   while (i< params.num_iter && r2 < escape)
     {
-      COMPONENT_FOLD(p.x);
-      COMPONENT_FOLD(p.y);
-      COMPONENT_FOLD(p.z);
-      
-      r2 = p.Dot(p);      
+      // #define COMPONENT_FOLD(x) { (x) = fabs(x) <= 1? (x) : copysign(2,(x))-(x); }
+      // COMPONENT_FOLD(p.x);
+      p.x = fabs(p.x) <= 1 ? p.x : copysign(2, p.x) - p.x;
+      p.y = fabs(p.y) <= 1 ? p.y : copysign(2, p.y) - p.y;
+      p.z = fabs(p.z) <= 1 ? p.z : copysign(2, p.z) - p.z;
+
+      // COMPONENT_FOLD(p.y);
+      // COMPONENT_FOLD(p.z);
+
+      r2 = p.Dot(p);
 
       if (r2<rMin2)
 	{
@@ -55,19 +60,19 @@ double MandelBoxDE(const vec3 &p0, const MandelBoxParams &params, double c1, dou
 	  dfactor *= (rFixed2rMin2);
 	}
       else
-      if ( r2<rFixed2) 
+      if ( r2<rFixed2)
 	{
 	  const double t = (rFixed2/r2);
 	  p = p*(rFixed2/r2);;
 	  dfactor *= t;
 	}
-      
 
-      dfactor = dfactor*fabs(params.scale)+1.0;      
+
+      dfactor = dfactor*fabs(params.scale)+1.0;
       p = p*params.scale+p0;
       i++;
     }
-  
+
   return  (p.Magnitude() - c1) / dfactor - c2;
 }
 

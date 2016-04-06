@@ -40,13 +40,12 @@
 void getParameters(char *filename, CameraParams *camera_params, RenderParams *renderer_params,
 		   MandelBoxParams *mandelBox_paramsP);
 void init3D       (CameraParams *camera_params, const RenderParams *renderer_params);
-void renderFractal(const CameraParams &camera_params, const RenderParams &renderer_params, unsigned char* image);
+void renderFractal(const CameraParams &camera_params, const RenderParams &renderer_params, unsigned char* image, const MandelBoxParams &mandelBox_params);
 void saveBMP      (const char* filename, const unsigned char* image, int width, int height);
 void fillParams(char *filename, CameraParams *camP, RenderParams *renP, MandelBoxParams *boxP);
 void print_renderer(RenderParams *renP);
 
 
-MandelBoxParams mandelBox_params;
 struct stat st = {0};
 #define PI 3.14159265
 
@@ -57,8 +56,7 @@ int main(int argc, char** argv)
   #endif
   CameraParams    camera_params;
   RenderParams    renderer_params;
-
-
+  MandelBoxParams mandelBox_params;
 
 
 
@@ -80,7 +78,7 @@ int main(int argc, char** argv)
     camera_params.camPos[0] = 15*cos(PI/180*i);
     camera_params.camPos[1] = 15*sin(PI/180*i);
     init3D(&camera_params, &renderer_params);
-    renderFractal(camera_params, renderer_params, image);
+    renderFractal(camera_params, renderer_params, image, mandelBox_params);
     printf("saving: %s\n",renderer_params.file_name);
     saveBMP(renderer_params.file_name, image, renderer_params.width, renderer_params.height);
   }

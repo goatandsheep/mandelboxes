@@ -19,7 +19,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include <stdio.h>
-
+#include <stdlib.h>
+#include <assert.h>
 #include "color.h"
 #include "mandelbox.h"
 #include "camera.h"
@@ -35,73 +36,87 @@
 extern double getTime();
 extern void   printProgress( double perc, double time );
 
-extern void rayMarch (const RenderParams &render_params, const vec3 &from, const vec3  &to, double eps, pixelData &pix_data);
+// #pragma acc routine seq
+extern void rayMarch (const RenderParams &render_params, const vec3 &from, const vec3  &to, double eps, pixelData &pix_data, const MandelBoxParams &mandelBox_params);
+
+#pragma acc routine seq
 extern vec3 getColour(const pixelData &pixData, const RenderParams &render_params,
 		      const vec3 &from, const vec3  &direction);
 
 void renderFractal(const CameraParams &camera_params, const RenderParams &renderer_params,
-		   unsigned char* image)
+		   unsigned char* image, const MandelBoxParams &mandelBox_params)
 {
-
-
-  const double eps = pow(10.0, renderer_params.detail);
-  double farPoint[3];
-  vec3 to, from;
-
-  from.SetDoublePoint(camera_params.camPos);
 
   const int height = renderer_params.height;
   const int width  = renderer_params.width;
+  const int n = height*width;
+  const double eps = pow(10.0, renderer_params.detail);
+  int i, j;
+  vec3 &to = *(new vec3[n]);
+  vec3 *col = new vec3[n];
+  pixelData *pix = new pixelData[n];
+  // assert(to);
+  assert(col);
+  assert(pix);
 
-  pixelData pix_data;
+  vec3 from;
+  from.SetDoublePoint(camera_params.camPos);
 
-  #pragma omp parallel\
-  default(shared)\
-  private(to, pix_data)\
-  shared(image,camera_params, renderer_params, from, farPoint)
+  #pragma acc data copyout(image[0:3*n]) create(to[0:n],pix[0:n],col[0:n]) copyin(eps,from,renderer_params,mandelBox_params,camera_params)
   {
-  double time = getTime(); // was before pragma loop
-  #if defined(_OPENMP)
-    int nthreads = omp_get_num_threads();
-    int ID = omp_get_thread_num();
-    if (ID==0) printf("Running with %d threads\n",nthreads);
-  #else
-    int ID = 0;
-  #endif
+    double farPoint[3];
 
-  int i,j,k;
-  #pragma omp for schedule (guided)
-  for(j = 0; j < height; j++)
-  {
-		vec3 color;
-      //for each column pixel in the row
+    pixelData pix_data;
 
-    for(i = 0; i <width; i++)
-  	{
-  	  // get point on the 'far' plane
-  	  // since we render one frame only, we can use the more specialized method
-  	  UnProject(i, j, camera_params, farPoint);
+    #pragma omp parallel\
+    default(shared)\
+    private(to, pix_data)\
+    shared(image,camera_params, renderer_params, from, farPoint)
+    {
+      double time = getTime(); // was before pragma loop
 
-  	  // to = farPoint - camera_params.camPos
-  	  to = SubtractDoubleDouble(farPoint,camera_params.camPos);
-  	  to.Normalize();
+      #if defined(_OPENMP)
+        int nthreads = omp_get_num_threads();
+        int ID = omp_get_thread_num();
+        if (ID==0) printf("Running with %d threads\n",nthreads);
+      #else
+        int ID = 0;
+      #endif
 
-  	  //render the pixel
-  	  rayMarch(renderer_params, from, to, eps, pix_data);
+      #pragma omp for schedule (guided)
+      #pragma acc parallel loop
+      for(j = 0; j < height; j++)
+      {
+        vec3 color;
+          //for each column pixel in the row
+        #pragma acc loop
+        for(i = 0; i <width; i++)
+        {
+          int k = (j * width + i)*3;
+          // get point on the 'far' plane
+          // since we render one frame only, we can use the more specialized method
+          UnProject(i, j, camera_params, farPoint);
 
-  	  //get the colour at this pixel
-  	  color = getColour(pix_data, renderer_params, from, to);
+          // to = farPoint - camera_params.camPos
+          to = SubtractDoubleDouble(farPoint,camera_params.camPos);
+          to.Normalize();
 
-  	  //save colour into texture
-  	  k = (j * width + i)*3;
-  	  image[k+2] = (unsigned char)(color.x * 255);
-  	  image[k+1] = (unsigned char)(color.y * 255);
-  	  image[k]   = (unsigned char)(color.z * 255);
-  	}
-    if (ID==0) printProgress((j+1)/(double)height,getTime()-time);
+          //render the pixel
+          rayMarch(renderer_params, from, to, eps, pix_data, mandelBox_params);
+
+          //get the colour at this pixel
+          color = getColour(pix_data, renderer_params, from, to);
+
+          //save colour into texture
+      	  image[k+2] = (unsigned char)(color.x * 255);
+      	  image[k+1] = (unsigned char)(color.y * 255);
+      	  image[k]   = (unsigned char)(color.z * 255);
+      	}
+        if (ID==0) printProgress((j+1)/(double)height,getTime()-time);
+      }
+      if (ID==0) printf("\n rendering done:\n");
+    }//end parallel
   }
-  if (ID==0) printf("\n rendering done:\n");
-}//end parallel
 
 }
 

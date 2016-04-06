@@ -26,40 +26,42 @@
 
 using namespace std;
 
-//---lightning and colouring---------
-static vec3 CamLight(1.0,1.0,1.0);
-static double CamLightW = 1.8;// 1.27536;
-static double CamLightMin = 0.3;// 0.48193;
-//-----------------------------------
-static const vec3 baseColor(1.0, 1.0, 1.0);
-static const vec3 backColor(0.4,0.4,0.4);
-//-----------------------------------
-
 void lighting(const vec3 &n, const vec3 &color, const vec3 &pos, const vec3 &direction,  vec3 &outV)
 {
+  //----------lightning--------------
+  vec3 CamLight(1.0,1.0,1.0);
+  double CamLightW = 1.8;// 1.27536;
+  double CamLightMin = 0.3;// 0.48193;
+//-----------------------------------
   vec3 nn = n -1.0;
   double ambient = max( CamLightMin, nn.Dot(direction) )*CamLightW;
   outV = CamLight*ambient*color;
 }
 
+#pragma acc routine seq
 vec3 getColour(const pixelData &pixData, const RenderParams &render_params,
-	       const vec3 &from, const vec3  &direction)
+         const vec3 &from, const vec3  &direction)
 {
+  //--------colouring------------------
+  const vec3 baseColor(1.0, 1.0, 1.0);
+  const vec3 backColor(0.4,0.4,0.4);
+  //-----------------------------------
+
   //colouring and lightning
   vec3 hitColor = baseColor;
-  
-  if (pixData.escaped == false) 
+
+  if (pixData.escaped == false)
     {
       //apply lighting
       lighting(pixData.normal, hitColor, pixData.hit, direction, hitColor);
-      
+
       //add normal based colouring
       if(render_params.colourType == 0 || render_params.colourType == 1)
 	{
 	  hitColor = hitColor * pixData.normal;
 	  hitColor = (hitColor + 1.0)/2.0;
 	  hitColor = hitColor*render_params.brightness;
-	  
+
 	  //gamma correction
 	  clamp(hitColor, 0.0, 1.0);
 	  hitColor = hitColor*hitColor;
@@ -72,9 +74,9 @@ vec3 getColour(const pixelData &pixData, const RenderParams &render_params,
 	  hitColor.z = t;
 	}
     }
-  else 
+  else
     //we have the background colour
     hitColor = backColor;
-  
+
   return hitColor;
 }

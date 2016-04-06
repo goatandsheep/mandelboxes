@@ -27,7 +27,7 @@
 
 #define BUF_SIZE 1024
 
-static char buf[BUF_SIZE];
+char buf[BUF_SIZE];
 
 void getParameters(char *filename, CameraParams *camP, RenderParams *renP, MandelBoxParams *boxP)
 {
