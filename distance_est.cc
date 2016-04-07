@@ -22,11 +22,11 @@
 #include "mandelbox.h"
 
 // extern MandelBoxParams mandelBox_params;
-// #pragma acc routine seq
+#pragma acc routine seq
 extern double MandelBoxDE(const vec3 &pos, const MandelBoxParams &mPar, double c1, double c2);
 
 //Distance Estimator Field Selector
-// #pragma acc routine seq
+#pragma acc routine seq
 double DE(const vec3 &p, const MandelBoxParams &mandelBox_params)
 {
   double c1 = fabs(mandelBox_params.scale - 1.0);

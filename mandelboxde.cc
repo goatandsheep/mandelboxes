@@ -29,7 +29,7 @@
 
 // #define COMPONENT_FOLD(x) { (x) = fabs(x) <= 1? (x) : copysign(2,(x))-(x); }
 
-// #pragma acc routine seq
+#pragma acc routine seq
 double MandelBoxDE(const vec3 &p0, const MandelBoxParams &params, double c1, double c2)
 {
   vec3 p = p0;

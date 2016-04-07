@@ -34,9 +34,9 @@
 #endif
 
 extern double getTime();
-extern void   printProgress( double perc, double time );
+// extern void   printProgress( double perc, double time );
 
-// #pragma acc routine seq
+#pragma acc routine seq
 extern void rayMarch (const RenderParams &render_params, const vec3 &from, const vec3  &to, double eps, pixelData &pix_data, const MandelBoxParams &mandelBox_params);
 
 #pragma acc routine seq
@@ -84,7 +84,7 @@ void renderFractal(const CameraParams &camera_params, const RenderParams &render
       #endif
 
       #pragma omp for schedule (guided)
-      #pragma acc parallel loop
+      // #pragma acc parallel loop
       for(j = 0; j < height; j++)
       {
         vec3 color;
@@ -112,11 +112,14 @@ void renderFractal(const CameraParams &camera_params, const RenderParams &render
       	  image[k+1] = (unsigned char)(color.y * 255);
       	  image[k]   = (unsigned char)(color.z * 255);
       	}
-        if (ID==0) printProgress((j+1)/(double)height,getTime()-time);
+        // if (ID==0) printProgress((j+1)/(double)height,getTime()-time);
       }
       if (ID==0) printf("\n rendering done:\n");
     }//end parallel
   }
+
+  free(pix);
+  free(col);
 
 }
 

@@ -26,11 +26,11 @@
 #include "mandelbox.h"
 #include "renderer.h"
 
-// #pragma acc routine seq
+#pragma acc routine seq
 extern double DE(const vec3 &p, const MandelBoxParams &mandelBox_params);
 inline void normal (const vec3 & p, vec3 & normal, const MandelBoxParams &mandelBox_params);
 
-// #pragma acc routine seq
+#pragma acc routine seq
 void rayMarch(const RenderParams &render_params, const vec3 &from, const vec3  &direction, double eps,
 	      pixelData& pix_data, const MandelBoxParams &mandelBox_params)
 {

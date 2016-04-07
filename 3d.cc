@@ -28,7 +28,7 @@
 //test
 //---------------------------------------------------------------------------------------------
 //when projection and modelview matricies are static (computed only once, and camera does not mover)
-int UnProject(double winX, double winY, CameraParams camP, double *obj)
+int UnProject(double winX, double winY, const CameraParams &camP, double *obj)
 {
   //Transformation vectors
   double in[4], out[4];
@@ -237,7 +237,7 @@ void MultiplyMatrices(double *result, const double *matrix1, const double *matri
     matrix1[15]*matrix2[15];
 }
 
-void MultiplyMatrixByVector(double *resultvector, double *matrix, double *pvector)
+void MultiplyMatrixByVector(double *resultvector, const double *matrix, double *pvector)
 {
   resultvector[0]=matrix[0]*pvector[0]+matrix[4]*pvector[1]+matrix[8]*pvector[2]+matrix[12]*pvector[3];
   resultvector[1]=matrix[1]*pvector[0]+matrix[5]*pvector[1]+matrix[9]*pvector[2]+matrix[13]*pvector[3];
