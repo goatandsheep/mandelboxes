@@ -190,21 +190,21 @@ void fillDefaultParams(char *filename, CameraParams *camP, RenderParams *renP, M
 }
 
 
+void print_camera(CameraParams *camP){
+  printf("1. cam position x: %f\n",camP->camPos[0]);
+  printf("2. cam position y: %f\n",camP->camPos[1]);
+  printf("3. cam position z: %f\n",camP->camPos[2]);
+  printf("4. cam target x: %f\n",camP->camTarget[0]);
+  printf("5. cam target y: %f\n",camP->camTarget[1]);
+  printf("6. cam target z: %f\n",camP->camTarget[2]);
+  printf("7. cam up x: %f\n",camP->camUp[0]);
+  printf("8. cam up y: %f\n",camP->camUp[1]);
+  printf("9. cam up z: %f\n",camP->camUp[2]);
+  printf("10. fov: %f\n",camP->fov);
+}
 
 void print_renderer(RenderParams *renP)
 {
-  // initiate renderer
-  //   int fractalType;
-  //   int colourType;
-  //   int super_sampling;
-  //   float brightness;
-  //   int width;
-  //   int height;
-  //   float detail;
-  //   int maxRaySteps;
-  //   float maxDistance;
-  //   char file_name[80];
-  // } RenderParams;
   printf("1. fractalType: %d\n",renP->fractalType);
   printf("2. maxRaySteps: %d\n",renP->maxRaySteps);
   printf("3. maxDistance: %f\n",renP->maxDistance);

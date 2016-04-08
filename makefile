@@ -28,9 +28,11 @@ serial:
 
 
 test:
+	rm -f images/*.bmp
 	./mandelbox params2.dat
 testmpi:
 	# --map-by socket:PE=1:none use for openACC
+	rm -f images/*.bmp
 	mpirun --map-by socket:PE=4:none -hostfile host_file ./mandelbox para
 
 
@@ -41,9 +43,12 @@ benchmpi:
 
 
 video:
-	# make test
-	ffmpeg -r 20 -i images/image%010d.bmp  -c:v libx264 -preset slow -tune animation -crf 18 -c:a copy images/output.mp4
+	ffmpeg -y -r 10 -i images/image%010d.bmp  -c:v libx264 -preset slow -tune animation -crf 18 -c:a copy images/output.mp4
 	open images/output.mp4
+videompi:
+	ffmpeg -y -r 30 -i images/image%010d.bmp  -c:v libx264 -preset fast -tune animation -crf 21 -c:a copy images/output.mp4
+	# ffmpeg -y -r 10 -i images/image%010d.bmp  -c:v libx264 -preset slow -tune animation -crf 18 -c:a copy images/output.mp4
+	# open images/output.mp4
 
 
 clean:

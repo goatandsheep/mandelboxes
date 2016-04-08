@@ -41,7 +41,7 @@ extern void rayMarch (const RenderParams &render_params, const vec3 &from, const
 extern vec3 getColour(const pixelData &pixData, const RenderParams &render_params,
 		      const vec3 &from, const vec3  &direction);
 
-void renderFractal(const CameraParams &camera_params, const RenderParams &renderer_params,unsigned char* image)
+void renderFractal(const CameraParams &camera_params, const RenderParams &renderer_params, unsigned char* image, pixelData& max_pix_data,pixelData *return_distances)
 {
 
 
@@ -56,26 +56,27 @@ void renderFractal(const CameraParams &camera_params, const RenderParams &render
   const int width  = renderer_params.width;
 
   pixelData pix_data;
+  max_pix_data.distance=0;
 
   #pragma omp parallel\
   default(shared)\
   private(to, pix_data,collision)\
-  shared(image,camera_params, renderer_params, from, farPoint)
+  shared(image,camera_params, renderer_params, from, farPoint,max_pix_data,return_distances)
   {
   // double time = getTime(); // was before pragma loop
-  #if defined(_OPENMP)
-    int nthreads = omp_get_num_threads();
-    int ID = omp_get_thread_num();
-    // if (ID==0) printf("Running with %d threads\n",nthreads);
-  #else
-    int ID = 0;
-  #endif
-
+  // #if defined(_OPENMP)
+  //   int nthreads = omp_get_num_threads();
+  //   int ID = omp_get_thread_num();
+  //   // if (ID==0) printf("Running with %d threads\n",nthreads);
+  // #else
+  //   int ID = 0;
+  // #endif
+  vec3 color;
   int i,j,k;
   #pragma omp for schedule (guided)
   for(j = 0; j < height; j++)
   {
-		vec3 color;
+
       //for each column pixel in the row
 
     for(i = 0; i <width; i++)
@@ -90,9 +91,11 @@ void renderFractal(const CameraParams &camera_params, const RenderParams &render
 
   	  //render the pixel
   	  rayMarch(renderer_params, from, to, eps, pix_data);
-      // if (pix_data.escaped == false){
-      //   printf("%dx%d - distance = %f\n",i,j,pix_data.distance);
-      // }
+
+      #pragma omp critical
+      if  (pix_data.distance > max_pix_data.distance){
+        max_pix_data = pix_data;
+      }
 
 
   	  //get the colour at this pixel
@@ -107,7 +110,81 @@ void renderFractal(const CameraParams &camera_params, const RenderParams &render
     //if (ID==0) printProgress((j+1)/(double)height,getTime()-time);
   }
   //if (ID==0) printf("\n rendering done:\n");
+  int divisor = 2;
+  const int denom =2*divisor;
+  const int h_width = width/2; // half
+  const int h_height = height/2; // half
+  const int q_width = width/denom; // half
+  const int q_height = height/denom; // half
+  const int left = divisor-1;
+  const int right = divisor+1;
+  int camera_pos_width[5]  = {h_width,left*q_width,right*q_width,h_width,h_width};
+  int camera_pos_height[5] = {h_height,h_height,h_height, right*q_height,left*q_height};
+    #pragma omp for schedule (guided)
+    for(j = 0; j < 5; j++)
+    {
+      // get point on the 'far' plane
+      // since we render one frame only, we can use the more specialized method
+      UnProject(camera_pos_width[j], camera_pos_height[j], camera_params, farPoint);
+
+      // to = farPoint - camera_params.camPos
+      to = SubtractDoubleDouble(farPoint,camera_params.camPos);
+      to.Normalize();
+
+      //render the pixel
+      rayMarch(renderer_params, from, to, eps, pix_data);
+      // #pragma omp critical
+      {
+      return_distances[j].distance = pix_data.distance;
+      return_distances[j].hit = pix_data.hit;
+      return_distances[j].escaped = pix_data.escaped;
+      }
+    }
+
+
+
+
 }//end parallel
 
 }
 
+
+// void getDistance(const CameraParams &camera_params, const RenderParams &renderer_params, pixelData *return_distances,int divisor)
+// {
+//   const double eps = pow(10.0, renderer_params.detail);
+//   double farPoint[3];
+//   vec3 to, from;
+
+
+//   from.SetDoublePoint(camera_params.camPos);
+//   printf("d");
+//   const int height = renderer_params.height;
+//   const int width  = renderer_params.width;
+//   const int denom =2*divisor;
+//   const int h_width = width/2; // half
+//   const int h_height = height/2; // half
+//   const int q_width = width/denom; // half
+//   const int q_height = height/denom; // half
+//   const int left = divisor-1;
+//   const int right = divisor+1;
+
+
+//   int camera_pos_width[5]  = {h_width,left*q_width,right*q_width,h_width,h_width};
+//   int camera_pos_height[5] = {h_height,h_height,h_height, right*q_height,left*q_height};
+
+//   pixelData pix_data;
+//   printf("e\n");
+//   #pragma omp parallel\
+//   default(shared)\
+//   private(to, pix_data)\
+//   shared(camera_params, renderer_params, from, farPoint,return_distances)
+//   {
+//     vec3 color;
+//     int j;
+
+
+
+
+//   }//end parallel
+
+// }
