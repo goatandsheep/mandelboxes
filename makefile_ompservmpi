@@ -1,9 +1,10 @@
-LDFLAGS = -lm -fopenmp
-FLAGS= -Wall -fopenmp -O3
+LDFLAGS = -lm -fopenmp -DUSE_MPI
+FLAGS= -fopenmp -O3 -DUSE_MPI
 CFLAGS  = $(FLAGS)
 CXXFLAGS= $(FLAGS)
-CXX=g++-4.9
-CC=g++-4.9
+CXX=mpiCC
+CC=mpiCC
+
 
 PROGRAM_NAME=mandelbox
 

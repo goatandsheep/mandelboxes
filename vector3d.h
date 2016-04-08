@@ -121,8 +121,11 @@ inline vec3 SubtractDoubleDouble(const double *d1, const double *d2)
 
 inline double clamp(double d, double min, double max) 
 {
-  const double t = d < min ? min : d;
-  return t > max ? max : t;
+  if (d < min)
+    return min;
+  if (d > max)
+    return max;
+  return d;
 }
 
 
