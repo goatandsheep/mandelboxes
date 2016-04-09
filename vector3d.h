@@ -7,7 +7,7 @@
 #include <cmath>
 #endif
 
-typedef struct vec3
+typedef struct //vec3
 {
     // Data
     double x, y, z;
@@ -123,7 +123,7 @@ typedef struct vec3
         z *= fMult;
         return;
     }
-};
+} vec3;
 
 inline vec3 SubtractDoubleDouble(const double *d1, const double *d2)
 {
@@ -166,13 +166,28 @@ inline void clamp(vec3 &v, double min, double max)
     p->z=(v[2])-(u[2]);             \
 }
 
+inline void Normalize()
+{
+    double fMag = ( x*x + y*y + z*z );
+    if (fMag == 0)
+    {
+        return;
+    }
+
+    double fMult = 1.0/sqrt(fMag);
+    x *= fMult;
+    y *= fMult;
+    z *= fMult;
+    return;
+}
+
 #define NORMALIZE(p) {                              \
-    double fMag = ( p->x*p->x + p->y*p->y + p->z*p->z );    \
+    double fMag = ( p.x*p.x + p.y*p.y + p.z*p.z );    \
     if (fMag != 0) {                                \
         double fMult = 1.0/sqrt(fMag);              \
-        p->x *= fMult;                              \
-        p->y *= fMult;                              \
-        p->z *= fMult;                              \
+        p.x *= fMult;                              \
+        p.y *= fMult;                              \
+        p.z *= fMult;                              \
     }                                               \
 }
 
