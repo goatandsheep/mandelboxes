@@ -34,8 +34,8 @@ void printProgress( double perc, double time )
   int min = t/60;
   sec = t%60;
 
-  OutputString = (char*)"*** completed % 5.2f%s ---  cum. time = %02d:%02d:%02d   % e (s)";
-  sprintf(delete_space, OutputString, perc, "%%", hr, min, sec, time);
+  OutputString = (char*)"*** completed % 5.2f%s ---  cum. time (h:m:s)= %02d:%02d:%02d"; //% d (s)
+  sprintf(delete_space, OutputString, perc, "%%", hr, min, sec); //,time
 
   fprintf( stderr, delete_space);
   unsigned int i;
