@@ -96,7 +96,7 @@ typedef struct //vec3
         else if ( i == 1 ) return y;
         else return z;
     }
-
+    /*
     // Functions
     inline double Dot( const vec3 &V1 ) const
     {
@@ -122,13 +122,13 @@ typedef struct //vec3
         y *= fMult;
         z *= fMult;
         return;
-    }
+    }*/
 } vec3;
-
+/*
 inline vec3 SubtractDoubleDouble(const double *d1, const double *d2)
 {
   return vec3(d1[0]-d2[0], d1[1]-d2[1], d1[2]-d2[2]);
-}
+}*/
 
 #define INTERNAL_CLAMP(d,min,max) {     \
     double f = (d < min ? min : d);     \
