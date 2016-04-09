@@ -63,7 +63,7 @@ vec3 getColour(const pixelData &pixData, const RenderParams &render_params,
 	  hitColor = hitColor*render_params.brightness;
 
 	  //gamma correction
-	  clamp(hitColor, 0.0, 1.0);
+	  CLAMP(hitColor, 0.0, 1.0);
 	  hitColor = hitColor*hitColor;
 	}
       if(render_params.colourType == 1)

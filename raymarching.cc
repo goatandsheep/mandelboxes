@@ -80,7 +80,10 @@ inline void normal(const vec3 & p, vec3 & normal, const MandelBoxParams &mandelB
   // compute the normal at p
   const double sqrt_mach_eps = 1.4901e-08;
 
-  double eps = std::max( p.Magnitude(), 1.0 )*sqrt_mach_eps;
+  //double eps = std::max( p.Magnitude(), 1.0 )*sqrt_mach_eps;
+  double mag;
+  MAGNITUDE(mag, p);
+  double eps = std::max( mag, 1.0 )*sqrt_mach_eps;
 
   vec3 e1(eps, 0,   0);
   vec3 e2(0  , eps, 0);
@@ -88,5 +91,6 @@ inline void normal(const vec3 & p, vec3 & normal, const MandelBoxParams &mandelB
 
   normal = vec3(DE(p+e1, mandelBox_params)-DE(p-e1, mandelBox_params), DE(p+e2, mandelBox_params)-DE(p-e2, mandelBox_params), DE(p+e3, mandelBox_params)-DE(p-e3, mandelBox_params));
 
-  normal.Normalize();
+  //normal.Normalize();
+  NORMALIZE(normal);
 }

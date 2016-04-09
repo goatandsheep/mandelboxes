@@ -99,7 +99,8 @@ void renderFractal(const CameraParams &camera_params, const RenderParams &render
 
           // to = farPoint - camera_params.camPos
           to = SubtractDoubleDouble(farPoint,camera_params.camPos);
-          to.Normalize();
+          //to.Normalize();
+          NORMALIZE(to);
 
           //render the pixel
           rayMarch(renderer_params, from, to, eps, pix_data, mandelBox_params);

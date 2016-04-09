@@ -130,6 +130,18 @@ inline vec3 SubtractDoubleDouble(const double *d1, const double *d2)
   return vec3(d1[0]-d2[0], d1[1]-d2[1], d1[2]-d2[2]);
 }
 
+#define INTERNAL_CLAMP(d,min,max) {     \
+    double f = (d < min ? min : d);     \
+    d = (f > max ? max : f);            \
+}
+
+#define CLAMP(v,min,max) {              \
+    INTERNAL_CLAMP(v.x, min, max);      \
+    INTERNAL_CLAMP(v.y, min, max);      \
+    INTERNAL_CLAMP(v.z, min, max);      \
+}
+
+/*
 inline double clamp(double d, double min, double max)
 {
   if (d < min)
@@ -144,8 +156,7 @@ inline void clamp(vec3 &v, double min, double max)
   v.x = clamp(v.x,min,max);
   v.y = clamp(v.y,min,max);
   v.z = clamp(v.z,min,max);
-}
-
+}*/
 
 #define SET_POINT(p,v) {p.x=v[0]; p.y=v[1]; p.z=v[2]; }
 
@@ -165,9 +176,10 @@ inline void clamp(vec3 &v, double min, double max)
     }                                               \
 }
 
-#define MAGNITUDE(m,p)  ({ m=sqrt( p.x*p.x + p.y*p.y + p.z*p.z ); })
+//#define MAGNITUDE(m,p)  ({ m=sqrt( p.x*p.x + p.y*p.y + p.z*p.z ); })
+define MAGNITUDE(m,p)  ({ m=sqrt( p.x*p.x + p.y*p.y + p.z*p.z ); })
 
-#define DOT(d,p) {  d=( p.x*p.x + p.y*p.y + p.z*p.z ); }
+//#define DOT(d,p) {  d=( p.x*p.x + p.y*p.y + p.z*p.z ); }
 
 #define MAX(a,b) ( ((a)>(b))? (a):(b))
 
@@ -216,11 +228,6 @@ inline void clamp(vec3 &v, double min, double max)
     r.x = p.x * fInv;                   \
     r.y = p.y * fInv;                   \
     r.z = p.z * fInv;                   \
-}
-
-#define INTERNAL_CLAMP(d,min,max) {     \
-    double f = (d < min ? min : d);     \
-    d = (f > max ? max : f);            \
 }
 
 
