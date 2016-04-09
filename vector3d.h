@@ -176,10 +176,9 @@ inline void clamp(vec3 &v, double min, double max)
     }                                               \
 }
 
-//#define MAGNITUDE(m,p)  ({ m=sqrt( p.x*p.x + p.y*p.y + p.z*p.z ); })
-define MAGNITUDE(m,p)  ({ m=sqrt( p.x*p.x + p.y*p.y + p.z*p.z ); })
+#define MAGNITUDE(m,p)  ({ m=sqrt( p.x*p.x + p.y*p.y + p.z*p.z ); })
 
-//#define DOT(d,p) {  d=( p.x*p.x + p.y*p.y + p.z*p.z ); }
+#define DOT(d,p) {  d=( p.x*p.x + p.y*p.y + p.z*p.z ); }
 
 #define MAX(a,b) ( ((a)>(b))? (a):(b))
 

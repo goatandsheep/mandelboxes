@@ -98,8 +98,11 @@ void renderFractal(const CameraParams &camera_params, const RenderParams &render
           UnProject(i, j, camera_params, farPoint);
 
           // to = farPoint - camera_params.camPos
-          to = SubtractDoubleDouble(farPoint,camera_params.camPos);
-          //to.Normalize();
+          
+          // to = SubtractDoubleDouble(farPoint,camera_params.camPos);
+          VEC_MINUS_VEC(to, farPoint, camera_params.camPos);
+          
+          // to.Normalize();
           NORMALIZE(to);
 
           //render the pixel
