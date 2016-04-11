@@ -101,6 +101,7 @@ int main(int argc, char** argv)
 
   if (argc > 1){ // original behavior
     getParameters(argv[1], &camera_params, &renderer_params, &mandelBox_params);
+    printf("Reading File: %s\n",argv[1]);
     int image_size = renderer_params.width * renderer_params.height;
     unsigned char *image = (unsigned char*)malloc(3*image_size*sizeof(unsigned char));
     init3D(&camera_params, &renderer_params);

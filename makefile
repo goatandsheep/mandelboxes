@@ -51,4 +51,4 @@ video_hq:
 
 
 clean:
-	rm -f *.o $(PROGRAM_NAME) $(EXEEXT) *~
+	rm -f *.o $(PROGRAM_NAME) mandelbulb $(EXEEXT) *~

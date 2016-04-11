@@ -1,4 +1,5 @@
-FLAGS=-acc -fast -ta=tesla,cc35 -Minfo=accel -Minform=inform -O3
+# FLAGS=-acc -fast -ta=tesla,cc35 -Minfo=accel -Minform=inform -O3
+FLAGS= -mp -O3
 CFLAGS  = $(FLAGS)
 CXXFLAGS= $(FLAGS)
 CXX=pgCC
