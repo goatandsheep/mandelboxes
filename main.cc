@@ -37,7 +37,6 @@
 #endif
 #ifdef _OPENACC
 #include <openacc.h>
-#include <curand.h>
 #endif
 #ifdef USE_MPI
 #include <mpi.h>
