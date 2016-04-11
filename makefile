@@ -19,7 +19,10 @@ serial: # uses gcc4.9 - for local OS X running
 	make -f makefile_serial
 mandelbulb: # compiles on tesla
 	make clean
-	make -f makefile_mandelbulb
+	make -f makefile_bulb
+mandelbulb49: # compiles on local
+	make clean
+	make -f makefile_bulb49
 
 
 test:
