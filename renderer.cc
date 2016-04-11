@@ -33,24 +33,20 @@
 #include <curand.h>
 #endif
 
+#define MAGNITUDE(m,p)  ({ m=sqrt( p.x*p.x + p.y*p.y + p.z*p.z ); })
+
 extern double getTime();
 extern void   printProgress( double perc, double time );
 extern void init3D       (CameraParams *camera_params, const RenderParams *renderer_params);
-
 extern void rayMarch (const RenderParams &render_params, const vec3 &from, const vec3  &to, double eps, pixelData &pix_data);
-
 extern vec3 getColour(const pixelData &pixData, const RenderParams &render_params,
 		      const vec3 &from, const vec3  &direction);
 
 void renderFractal(const CameraParams &camera_params, const RenderParams &renderer_params, unsigned char* image)
 {
-
-
   const double eps = pow(10.0, renderer_params.detail);
   double farPoint[3];
   vec3 to, from;
-
-
   from.SetDoublePoint(camera_params.camPos);
 
   const int height = renderer_params.height;
@@ -59,10 +55,7 @@ void renderFractal(const CameraParams &camera_params, const RenderParams &render
   pixelData pix_data;
 
 
-  #pragma omp parallel\
-  default(shared)\
-  private(to, pix_data)\
-  shared(image,camera_params, renderer_params, from, farPoint)
+  #pragma omp parallel default(shared) private(to, pix_data) shared(image, camera_params, renderer_params, from, farPoint)
   {
   vec3 color;
   int i,j,k;
@@ -103,7 +96,7 @@ void renderFractal(const CameraParams &camera_params, const RenderParams &render
 }
 
 // in this function we do not calculate the color of each pixel and we also return the max distance pix data as well as the distances in a cross
-void renderFractal_for_path(const CameraParams &camera_params, const RenderParams &renderer_params, pixelData& max_pix_data,pixelData *return_distances)
+void renderFractal_for_path(const CameraParams &camera_params, const RenderParams &renderer_params, pixelData& max_pix_data,pixelData& min_pix_data,pixelData *return_distances)
 {
 
 
@@ -119,6 +112,7 @@ void renderFractal_for_path(const CameraParams &camera_params, const RenderParam
 
   pixelData pix_data;
   max_pix_data.distance=0;
+  min_pix_data.distance=100;
 
   #pragma omp parallel\
   default(shared)\
@@ -147,6 +141,10 @@ void renderFractal_for_path(const CameraParams &camera_params, const RenderParam
         if  (pix_data.distance > max_pix_data.distance){
           max_pix_data = pix_data;
         }
+        #pragma omp critical
+        if  (pix_data.distance < min_pix_data.distance){
+          min_pix_data = pix_data;
+        }
 
       }
     }
@@ -174,7 +172,7 @@ void renderFractal_for_path(const CameraParams &camera_params, const RenderParam
 
         //render the pixel
         rayMarch(renderer_params, from, to, eps, pix_data);
-        // #pragma omp critical
+        #pragma omp critical
         {
         return_distances[j].distance = pix_data.distance;
         return_distances[j].hit = pix_data.hit;
@@ -186,104 +184,79 @@ void renderFractal_for_path(const CameraParams &camera_params, const RenderParam
 
 void generateCameraPath(CameraParams &camera_params, RenderParams &renderer_params, CameraParams *camera_params_array, int frames, double camera_speed)
 {
-  printf("Generating Camera Path\n");
+  printf("Generating Camera Path (Serial)\n");
   renderer_params.width = 25;
   renderer_params.height = 25;
 
-  camera_params.fov = 0.4; // 0.4
-
-  vec3 direction,direction2,bump;
-  direction2.x = 0;
-  direction2.y = 0;
-  direction2.z = 0;
+  camera_params.fov = 1; // 0.4
 
 
-  pixelData max_pix_data;
+  vec3 direction,bump,direction_new;
+  direction.x = camera_params.camTarget[0];
+  direction.y = camera_params.camTarget[1];
+  direction.z = camera_params.camTarget[2];
 
+  pixelData max_pix_data,min_pix_data;
   pixelData return_distances[5];
   double time = getTime();
-  double new_dir_weight;
+  double smooth_direction,dir_error,max_turn_speed;
+  max_turn_speed = 0.05; // higher values induce more jitter but allow for a more agile camera
+
   double move_rate, cam_dist;
-  double dir_error,dir_error2;
-  // int last_direction_change_reset = 2;
-  // int last_direction_change = 0;
-  double smooth_speed,new_distance,old_distance;
-  old_distance = 0;
+  double smooth_speed,new_distance;
+  smooth_speed = 1;
+
+  double bump_factor;
   int j;
   for (j=0;j<frames;j++){
     init3D(&camera_params, &renderer_params);
 
-    renderFractal_for_path(camera_params, renderer_params,max_pix_data,return_distances);
-    new_distance = return_distances[0].distance;
-    smooth_speed = 0.5* old_distance + 0.5*new_distance;
-    // if (new_distance > old_distance) smooth_speed = 0.5* old_distance + 0.5*new_distance;
-    // else smooth_speed = 0.3* old_distance + 0.8*new_distance;
-    old_distance = new_distance;
+    renderFractal_for_path(camera_params, renderer_params,max_pix_data,min_pix_data,return_distances);
 
-    move_rate = camera_speed*smooth_speed; //0.001
+    // MOVEMENT SPEED
+    new_distance = return_distances[0].distance;//min_pix_data.distance;//
+    if (new_distance > 0.1) smooth_speed *= 1.1;
+    else smooth_speed *= 0.5;
+    if (smooth_speed > 1) smooth_speed = 1;
+    else if (smooth_speed < 0.01) smooth_speed = 0.01;
+
+    move_rate = camera_speed*smooth_speed;
     cam_dist = move_rate+1;
 
 
-    direction.x = max_pix_data.hit.x-camera_params.camPos[0];
-    direction.y = max_pix_data.hit.y-camera_params.camPos[1];
-    direction.z = max_pix_data.hit.z-camera_params.camPos[2];
-    // last_direction_change = last_direction_change_reset;
+    // CALCULATE DIRECTION
+    direction_new.x = max_pix_data.hit.x-camera_params.camPos[0];
+    direction_new.y = max_pix_data.hit.y-camera_params.camPos[1];
+    direction_new.z = max_pix_data.hit.z-camera_params.camPos[2];
+    direction_new.Normalize();
 
+    MAGNITUDE(dir_error,(direction-direction_new));
+    dir_error = 10*(dir_error/max_pix_data.distance);
+
+    if (dir_error > 1) dir_error = 1;
+    else if (dir_error < 0.01) dir_error = 0; //0.01
+    smooth_direction = max_turn_speed*dir_error;
+    direction = direction*(1-smooth_direction) + direction_new*smooth_direction;
     direction.Normalize();
 
-    if (max_pix_data.distance < 0.01){ //0.001
-      new_dir_weight = 1- 10*max_pix_data.distance; //- max_pix_data.distance
-    }
-    else{
-      new_dir_weight = 0.5; // camera aggression
-    }
-    dir_error = new_dir_weight*(direction2-direction).Magnitude();
-    dir_error2 = 1-dir_error;
-    // printf("dir error %f\n",dir_error);
-    direction.x = dir_error2*direction2.x+dir_error* direction.x;
-    direction.y = dir_error2*direction2.y+dir_error* direction.y;
-    direction.z = dir_error2*direction2.z+dir_error* direction.z;
-    direction.Normalize();
-    direction2 = direction;
-
-    double bump_factor = move_rate/20; //30
-    if (return_distances[1].escaped == false && return_distances[2].escaped == false){ // left and right
-      int lr;
-      if (return_distances[1].distance > return_distances[2].distance){ // then move left
-        lr = 1;
-      }
-      else{
-        lr = 2;
-      }
-      bump.x = return_distances[lr].hit.x- camera_params.camPos[0];
-      bump.y = return_distances[lr].hit.y- camera_params.camPos[1];
-      bump.z = return_distances[lr].hit.z- camera_params.camPos[2];
-      bump.Normalize();
-      camera_params.camPos[0]+=bump.x*bump_factor;
-      camera_params.camPos[1]+=bump.y*bump_factor;
-      camera_params.camPos[2]+=bump.z*bump_factor;
-    }
-    if (return_distances[4].escaped == false && return_distances[5].escaped == false){ // up and down
-      int ud;
-      if (return_distances[4].distance > return_distances[5].distance){ // then move left
-        ud = 4;
-      }
-      else{
-        ud = 5;
-      }
-      bump.x = return_distances[ud].hit.x- camera_params.camPos[0];
-      bump.y = return_distances[ud].hit.y- camera_params.camPos[1];
-      bump.z = return_distances[ud].hit.z- camera_params.camPos[2];
-      bump.Normalize();
-      camera_params.camPos[0]+=bump.x*bump_factor;
-      camera_params.camPos[1]+=bump.y*bump_factor;
-      camera_params.camPos[2]+=bump.z*bump_factor;
+    // FLIP CAMERA
+    if (max_pix_data.distance < 0.0001){ // just in case, do not need in final version
+      direction.x *= -1;
+      direction.y *= -1;
+      direction.z *= -1;
     }
 
+    if (min_pix_data.distance < 0.001) bump_factor = min_pix_data.distance/10; //move_rate/10; //30
+    else bump_factor = 0;
 
-    camera_params.camPos[0] += direction.x*move_rate;
-    camera_params.camPos[1] += direction.y*move_rate;
-    camera_params.camPos[2] += direction.z*move_rate;
+    bump.x = camera_params.camPos[0] - min_pix_data.hit.x;
+    bump.y = camera_params.camPos[1] - min_pix_data.hit.y;
+    bump.z = camera_params.camPos[2] - min_pix_data.hit.z;
+    bump.Normalize();
+
+    camera_params.camPos[0] += direction.x*move_rate + bump.x*bump_factor;
+    camera_params.camPos[1] += direction.y*move_rate + bump.y*bump_factor;
+    camera_params.camPos[2] += direction.z*move_rate + bump.z*bump_factor;
 
     camera_params.camTarget[0] = camera_params.camPos[0]+ direction.x*cam_dist;
     camera_params.camTarget[1] = camera_params.camPos[1]+ direction.y*cam_dist;
