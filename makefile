@@ -17,6 +17,12 @@ mpi: # compiles on mpihost01 and distributes to sockets, also uses openMP
 serial: # uses gcc4.9 - for local OS X running
 	make clean
 	make -f makefile_serial
+mandelbulb: # compiles on tesla
+	make clean
+	make -f makefile_bulb
+mandelbulb49: # compiles on local
+	make clean
+	make -f makefile_bulb49
 
 
 test:
@@ -48,4 +54,4 @@ video_hq:
 
 
 clean:
-	rm -f *.o $(PROGRAM_NAME) $(EXEEXT) *~
+	rm -f *.o $(PROGRAM_NAME) mandelbulb $(EXEEXT) *~

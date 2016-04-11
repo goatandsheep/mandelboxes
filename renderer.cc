@@ -30,7 +30,6 @@
 #endif
 #ifdef _OPENACC
 #include <openacc.h>
-#include <curand.h>
 #endif
 
 #define MAGNITUDE(m,p)  ({ m=sqrt( p.x*p.x + p.y*p.y + p.z*p.z ); })
