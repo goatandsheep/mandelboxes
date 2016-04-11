@@ -125,7 +125,7 @@ void getParameters(char *filename, CameraParams *camP, RenderParams *renP, Mande
 
 
 
-void fillDefaultParams(char *filename, CameraParams *camP, RenderParams *renP, MandelBoxParams *boxP)
+void fillDefaultParams(CameraParams *camP, RenderParams *renP, MandelBoxParams *boxP)
 {
   //initiat mandel box params
   //   float rMin, rFixed;
@@ -175,11 +175,11 @@ void fillDefaultParams(char *filename, CameraParams *camP, RenderParams *renP, M
 
   camP->camPos[0] = 20;
   camP->camPos[1] = 20;
-  camP->camPos[2] = 7;
+  camP->camPos[2] = 0;
 
   camP->camTarget[0] = 0;
   camP->camTarget[1] = 0;
-  camP->camTarget[2] = -1;
+  camP->camTarget[2] = 0;
 
   camP->camUp[0] = 0;
   camP->camUp[1] = 0;
