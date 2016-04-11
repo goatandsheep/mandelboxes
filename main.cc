@@ -106,6 +106,7 @@ int main(int argc, char** argv)
     unsigned char *image = (unsigned char*)malloc(3*image_size*sizeof(unsigned char));
     init3D(&camera_params, &renderer_params);
     renderFractal(camera_params, renderer_params, image);
+    printf("Saving %s\n",renderer_params.file_name);
     saveBMP(renderer_params.file_name, image, renderer_params.width, renderer_params.height);
     free(image);
   }
