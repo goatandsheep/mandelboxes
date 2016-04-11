@@ -1,58 +1,50 @@
-FLAGS=-acc -fast -ta=tesla,cc35 -Minfo=accel -Minform=inform -O3
-CFLAGS  = $(FLAGS)
-CXXFLAGS= $(FLAGS)
-CC=pgCC
-CXX=pgCC
-
 
 PROGRAM_NAME=mandelbox
 
-$(PROGRAM_NAME): main.o print.o timing.o savebmp.o getparams.o 3d.o getcolor.o distance_est.o \
-	mandelboxde.o raymarching.o renderer.o init3D.o
-	make clean
-	$(CC) -o $@ $? $(CFLAGS) $(LDFLAGS)
-
-omp:
-	make clean
-	make -f makefile_omp
-ompserv:
+mandelbox:
+	# will run on all cores, for MPI compile from mpihost01 and "make mpi"
 	make clean
 	make -f makefile_ompserv
-ompservmpi:
+omp49: # uses gcc4.9 - for local OS X running
+	make clean
+	make -f makefile_omp
+omp: # compiles on mcmaster servers
+	make clean
+	make -f makefile_ompserv
+mpi: # compiles on mpihost01 and distributes to sockets, also uses openMP
 	make clean
 	make -f makefile_ompservmpi
-serial:
+serial: # uses gcc4.9 - for local OS X running
 	make clean
 	make -f makefile_serial
 
 
-
 test:
-	rm -f _images/*.bmp
+	rm -rf _images
 	time ./mandelbox params2.dat
 testmpi:
-	# --map-by socket:PE=1:none use for openACC
-	rm -f _images/*.bmp
+	# --map-by socket:PE=1:none  (use for openACC)
+	rm -rf _images
 	time mpirun --map-by socket:PE=4:none -hostfile host_file ./mandelbox para
-
 
 bench:
 	python -m timeit -n 3 -r 1 "__import__('os').system('./mandelbox params2.dat')"
 benchmpi:
 	python -m timeit -n 3 -r 1 "__import__('os').system('mpirun --map-by socket:PE=4 -hostfile host_file ./mandelbox para')"
 
-erik:
-	make omp
-	make test
+erik: # for my own use
+	make ompservmpi
+	make testmpi
 	make video
 	open "_videos/output.mp4"
 
+
 video:
-	ffmpeg -y -r 10 -i "_images/image%010d.bmp"  -c:v libx264 -preset slow -tune animation -crf 18 -c:a copy "_videos/output.mp4"
-videompi:
-	ffmpeg -y -r 30 -i "_images/image%010d.bmp"  -c:v libx264 -preset fast -tune animation -crf 21 -c:a copy "_videos/output.mp4"
-	# ffmpeg -y -r 10 -i images/image%010d.bmp  -c:v libx264 -preset slow -tune animation -crf 18 -c:a copy images/output.mp4
-	# open images/output.mp4
+	ffmpeg -y -r 30 -i "_images/image%010d.bmp"  -c:v libx264 -crf 0 -preset ultrafast "_videos/output.mp4"
+	open "_videos/output.mp4"
+video_hq:
+	ffmpeg -y -r 30 -i "_images/image%010d.bmp"  -c:v libx264 -preset slow -tune animation -crf 18 -c:a copy "_videos/output.mp4"
+	open images/output.mp4
 
 
 clean:
